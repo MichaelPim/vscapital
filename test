@@ -1,0 +1,78 @@
+import pandas as pd
+
+df= pd.read_csv('primer.csv',sep = ';')
+print(df)
+##stage 0
+m = []
+for i in range(len(df)-100):
+    try:
+        m.append(df['Volume'][i:i+100].mean())
+    except:
+        print(type(df['Open'][i]))
+        exit()
+m.extend([0]*100)
+
+avg_con=[]
+for i in range(len(df)):
+    avg_con.append(df['Volume'][i] <= m[i]*10)
+
+df['stage 0'] = avg_con
+df.to_csv('primer2.csv')
+
+print(len(m),len(df))
+
+##stage 1
+m1 = []
+for i in range(len(df)-3):
+    try:
+        m1.append(df['Volume'][i:i+3].mean())
+    except:
+        exit()
+print(len(m1))
+m1.extend([0]*3)
+
+
+
+avg_con2=[]
+for i in range(len(df)):
+    try:
+        avg_con2.append(df['Volume'][i] >= m1[i]*5 and df['Close'][i]<1.25*df['Open'][i])
+    except:
+        exit()
+
+print(avg_con2)
+df['stage 1'] = avg_con2
+df.to_csv('primer3.csv')
+
+df['mean stage 1'] = m1
+df.to_csv('primer3.csv')
+
+
+#stage 2
+m2 = []
+for i in range(len(df)):
+    try:
+        m2.append(df['stage 1'][i].mean())
+    except:
+        exit()
+
+avg_con3=[]
+for i in range(len(df)):
+    try:
+        avg_con3.append(df['Volume'][i] >= m2[i]*5 and df['Close'][i] <= df['Open'][i] and df['Volume'][i] <= m2[i]*50)
+    except:
+        exit()
+
+df['stage 2'] = avg_con3
+df.to_csv('primer4.csv')
+
+m3 = []
+for i in range(len(df)-100):
+    try:
+        m3.append(df['Open'][i:i+100].mean())
+    except:
+        exit()
+m3.extend([0]*100)
+
+df['avg open 2'] = m3
+df.to_csv('primer4.csv')
